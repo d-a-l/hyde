@@ -31,6 +31,8 @@ Activate Virtualenv
 
    source  hyde_workenv/bin/activate
 
+note that "(hyde_workenv)" appears in your prompt
+
 Install pip
 
 ::
