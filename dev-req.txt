@@ -14,3 +14,5 @@ pep8==0.6.1
 pylint==0.22.0
 pysmell==0.7.3
 PIL
+unidecode==0.04.9
+markdown2==2.1.0
