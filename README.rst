@@ -9,13 +9,19 @@ If your distribution does not provide a recent virtualenv
 you can install the current version using easy_install 
 (easy_install is provided by python-setuptools).
 
+::
+
    apt-get remove python-virtualenv
 
 Install Virtualenv
 
+::
+
    easy_install virtualenv
 
 Create a Virtualenv
+
+::
 
    cd /opt
    virtualenv --no-site-packages hyde_workenv
@@ -25,9 +31,12 @@ Create a Virtualenv
 
 Install Hyde from this repo
 
+::
+
    pip install -e git://github.com/hyde/hyde.git#egg=hyde
 
 voila!
+
 
 * * * * *
 
