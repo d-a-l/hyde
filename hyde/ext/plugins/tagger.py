@@ -4,6 +4,7 @@ Contains classes and utilities related to tagging
 resources in hyde.
 """
 import re
+import unidecode
 from hyde.fs import File, Folder
 from hyde.model import Expando
 from hyde.plugin import Plugin
@@ -16,7 +17,6 @@ from functools import partial
 from itertools import ifilter, izip, tee, product
 from operator import attrgetter
 
-
 class Tag(Expando):
     """
     A simple object that represents a tag.
@@ -27,6 +27,7 @@ class Tag(Expando):
         Initialize the tag with a name.
         """
         self.name = name
+        self.slug = slugify(name)
         self.resources = []
 
     def __repr__(self):
@@ -35,6 +36,18 @@ class Tag(Expando):
     def __str__(self):
         return self.name
 
+def slugify(string):
+    """
+    quik & dirty 'Dominio Público' -> 'dominio_publico' function.
+    """
+    try:
+        string = unicode(string)
+    except:
+        string = string.decode('utf-8')
+
+    string = unidecode.unidecode(string).lower()
+    string = re.sub(r'\W+','-',string)
+    return string.encode('ascii')
 
 def get_tagger_sort_method(site):
     config = site.config
@@ -141,7 +154,7 @@ class TaggerPlugin(Plugin):
                 tags[tagname] = tag
                 tag.resources.append(resource)
                 add_method(Node,
-                    'walk_resources_tagged_with_%s' % tagname,
+                    'walk_resources_tagged_with_%s' % tag.slug,
                     walk_resources_tagged_with,
                     tag=tag)
             else:
@@ -196,20 +209,21 @@ extends: false
 %(meta)s
 ---
 
-{%% set tag = site.tagger.tags['%(tag)s'] %%}
+{%% set titletag = '%(titletag)s' %%}
 {%% set source = site.content.node_from_relative_path('%(node)s') %%}
 {%% set walker = source['walk_resources_tagged_with_%(tag)s'] %%}
 {%% extends "%(template)s" %%}
 """
         for tagname, tag in self.site.tagger.tags.to_dict().iteritems():
             tag_data = {
-                "tag": tagname,
+                "titletag": tag['name'].encode('ascii', 'xmlcharrefreplace'),
+                "tag": tag['slug'],
                 "node": source.name,
                 "template": template,
                 "meta": meta_text
             }
             text = archive_text % tag_data
-            archive_file = File(target.child("%s.%s" % (tagname, extension)))
+            archive_file = File(target.child("%s.%s" % (tag['slug'], extension)))
             archive_file.delete()
             archive_file.write(text.strip())
             self.site.content.add_resource(archive_file)
