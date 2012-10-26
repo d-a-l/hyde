@@ -143,6 +143,22 @@ def markdown(env, value):
     return marked.convert(output)
 
 @environmentfilter
+def markdown2(env, value):
+    """
+    Markdown2 filter
+    """
+    try:
+        import markdown2 as md2
+    except ImportError:
+        logger.error(u"Cannot load the markdown2 library.")
+        raise TemplateError(u"Cannot load the markdown2 library")
+    output = value
+    marked = md2.Markdown(extras=["header-ids", "markdown-in-html", "footnotes"])
+    # more extras: https://github.com/trentm/python-markdown2/wiki/Extras
+    # TODO: load modules from hyde config
+    return marked.convert(output)
+
+@environmentfilter
 def restructuredtext(env, value):
     """
     RestructuredText filter
@@ -276,6 +292,32 @@ class Markdown(Extension):
             return ''
         output = caller().strip()
         return markdown(self.environment, output)
+
+class Markdown2(Extension):
+    """
+    A wrapper around the markdown2 filter for syntactic sugar.
+    """
+    tags = set(['markdown2'])
+
+    def parse(self, parser):
+        """
+        Parses the statements and defers to the callback for markdown2 processing.
+        """
+        lineno = parser.stream.next().lineno
+        body = parser.parse_statements(['name:endmarkdown2'], drop_needle=True)
+
+        return nodes.CallBlock(
+                    self.call_method('_render_markdown2'),
+                        [], [], body).set_lineno(lineno)
+
+    def _render_markdown2(self, caller=None):
+        """
+        Calls the markdown2 filter to transform the output.
+        """
+        if not caller:
+            return ''
+        output = caller().strip()
+        return markdown2(self.environment, output)
 
 class restructuredText(Extension):
     """
