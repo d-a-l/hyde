@@ -1,3 +1,36 @@
+This is a fork of Hyde http://github.com/hyde/hyde that are used in http://derechoaleer.info/ website
+
+clone this repo!
+
+Install Hyde whit Virtualenv in Debian
+--------------------------------------
+
+If your distribution does not provide a recent virtualenv 
+you can install the current version using easy_install 
+(easy_install is provided by python-setuptools).
+
+   apt-get remove python-virtualenv
+
+Install Virtualenv
+
+   easy_install virtualenv
+
+Create a Virtualenv
+
+   cd /opt
+   virtualenv --no-site-packages hyde_workenv
+   source  hyde_workenv/bin/activate
+   easy_install pip
+   export PIP_RESPECT_VIRTUALENV=true
+
+Install Hyde from this repo
+
+   pip install -e git://github.com/hyde/hyde.git#egg=hyde
+
+voila!
+
+* * * * *
+
 Version 0.8.5a14
 
 A brand new **hyde**
