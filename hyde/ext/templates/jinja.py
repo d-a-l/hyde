@@ -721,6 +721,7 @@ class Jinja2Template(Template):
         self.env.filters['urldecode'] = urldecode
         self.env.filters['asciidoc'] = asciidoc
         self.env.filters['markdown'] = markdown
+        self.env.filters['markdown2'] = markdown2
         self.env.filters['restructuredtext'] = restructuredtext
         self.env.filters['syntax'] = syntax
         self.env.filters['date_format'] = date_format
