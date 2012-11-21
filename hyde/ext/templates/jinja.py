@@ -120,6 +120,19 @@ def asciidoc(env, value):
     return unicode(result.getvalue(), "utf-8")
 
 @environmentfilter
+def textile(env, value):
+    """
+    Textile filter with support for extensions.
+    """
+    try:
+        import textile
+    except ImportError:
+        logger.error(u"Cannot load the textile library.")
+        raise TemplateError(u"Cannot load the textile library")
+    output = value
+    return textile.textile(output)
+
+@environmentfilter
 def markdown(env, value):
     """
     Markdown filter with support for extensions.
@@ -176,7 +189,11 @@ def restructuredtext(env, value):
     if highlight_source:
         import hyde.lib.pygments.rst_directive
 
-    parts = publish_parts(source=value, writer_name="html")
+    initial_header_level=4
+    overrides = {'initial_header_level': initial_header_level}
+
+    #TODO: load rest config from hyde config
+    parts = publish_parts(source=value, writer_name="html", settings_overrides=overrides)
     return parts['html_body']
 
 @environmentfilter
@@ -266,6 +283,32 @@ class Asciidoc(Extension):
             return ''
         output = caller().strip()
         return asciidoc(self.environment, output)
+
+class Textile(Extension):
+    """
+    A wrapper around the textile filter for syntactic sugar.
+    """
+    tags = set(['textile'])
+
+    def parse(self, parser):
+        """
+        Parses the statements and defers to the callback for textile processing.
+        """
+        lineno = parser.stream.next().lineno
+        body = parser.parse_statements(['name:endtextile'], drop_needle=True)
+
+        return nodes.CallBlock(
+                    self.call_method('_render_textile'),
+                        [], [], body).set_lineno(lineno)
+
+    def _render_textile(self, caller=None):
+        """
+        Calls the textile filter to transform the output.
+        """
+        if not caller:
+            return ''
+        output = caller().strip()
+        return textile(self.environment, output)
 
 class Markdown(Extension):
     """
@@ -720,6 +763,7 @@ class Jinja2Template(Template):
         self.env.filters['urlencode'] = urlencode
         self.env.filters['urldecode'] = urldecode
         self.env.filters['asciidoc'] = asciidoc
+        self.env.filters['textile'] = textile
         self.env.filters['markdown'] = markdown
         self.env.filters['markdown2'] = markdown2
         self.env.filters['restructuredtext'] = restructuredtext
